@@ -20,30 +20,62 @@ const corsPromise = () =>
     resolve(request);
   });
 
-  const getData = (response) => {
-    const plantData = JSON.parse(response).data;
-  }
-
-  const addToDom = (plant) =>{
-    const wrapperDiv = document.createElement('div');
-    wrapperDiv.setAttribute("class", plant.common_name)
-    const plant_name = document.createElement('h3');
-    plant_name.innerText = plant.common_name;
-    const img_url=plant.img_url;
-    const plant_img=document.createElement('img')
-    plant_img.setAttribute('src', img_url);
-    wrapperDiv.appendChild(plant_name);
-    wrapperDiv.appendChild(plant_img);
-    document.getElementById("plants").appendChild(wrapperDiv);
-
-  }
 // THIS IS SOME SAMPLE CODE FOR HOW TO USE PROMISES -- feel free to adapt this into a function!
-const displayContent = () => {
 corsPromise().then(
   (request) =>
     (request.onload = request.onerror = function () {
       // TODO: ADD FUNCTION, ETC. FOR WHATEVER YOU WANT TO DO ONCE THE DATA IS RECEIVED
+      handleResponse(request.response);
     })
-  );
+);
+
+const handleResponse = (response) => {
+  rawData = JSON.parse(response);
+  plants = rawData.data;
+
+  filteredPlants = plants.filter((plant) => {
+    return (plant.family_common_name = "Beech family");
+  });
+
+  let htmlPlants = filteredPlants.map(plantToHTML);
+
+  // now add the cards to the plant-wrapper div
+  let plantWrapper = document.getElementById("plant-wrapper");
+  for (plantCard of htmlPlants) {
+    plantWrapper.appendChild(plantCard);
   }
-//// TODO: ADD WHATEVER FUN CONTENT YOU WANT ////
+};
+
+/*
+  return a card for each plant
+*/
+const plantToHTML = (plant) => {
+  let plantCard = document.createElement("div");
+  plantCard.classList.add("card");
+
+  // Add the image to the card
+  let plantImage = document.createElement("img");
+  plantImage.classList.add("card-img-top");
+  plantImage.src = plant.image_url;
+
+  // card body
+  let cardBody = document.createElement("card-body");
+  let heading = document.createElement("h5");
+  heading.classList.add("card-title");
+  heading.classList.add("text-center");
+  heading.innerText = plant.common_name;
+
+  let familyName = document.createElement("p");
+  familyName.classList.add("card-text");
+  familyName.classList.add("text-center");
+  familyName.innerText = plant.family_common_name;
+
+  // now nest the elements
+  cardBody.appendChild(heading);
+  cardBody.appendChild(familyName);
+
+  plantCard.appendChild(plantImage);
+  plantCard.appendChild(cardBody);
+
+  return plantCard;
+};
